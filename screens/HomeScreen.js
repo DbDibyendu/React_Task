@@ -1,8 +1,9 @@
 import { useNavigation } from '@react-navigation/core'
 import React, { useState } from 'react'
-import { SafeAreaView, StyleSheet, Text,Linking , TouchableOpacity, View, Image } from 'react-native'
-// import { useHistory } from 'react-router';
-
+import { SafeAreaView, StyleSheet, Text, Linking, TouchableOpacity, View, Image } from 'react-native'
+import firebase from "firebase/compat/app"
+import "firebase/compat/auth"
+import "firebase/compat/firestore"
 const HomeScreen = () => {
 
     const [defaultRating, setdefaultRating] = useState(2)
@@ -39,12 +40,28 @@ const HomeScreen = () => {
     }
     const navigation = useNavigation()
     const handleSignOut = () => {
-        if(defaultRating<=3)
-            navigation.navigate("Review")
-        else
-        Linking.openURL('https://image.shutterstock.com/image-vector/thank-you-vector-typography-banner-260nw-1418233781.jpg')
+        if (defaultRating <= 3)
+            navigation.navigate("Review",{
+                paramKey: defaultRating,
+            })
+        else {
+            firebase.firestore()
+                .collection('Review')
+                .add({
+                    Comment: "Excellent Product",
+                    Rating: defaultRating,
+                })
+                .then(() => {
+                    console.log('Comment Added');
+                })
+                .catch((error) => {
+                    console.log("Error");
+                })
+            Linking.openURL('https://image.shutterstock.com/image-vector/thank-you-vector-typography-banner-260nw-1418233781.jpg')
+        }
+
     }
-    
+
     return (
         <SafeAreaView style={styles.container}>
             <Text style={styles.textStyle}>Please Rate Us </Text>
@@ -52,15 +69,15 @@ const HomeScreen = () => {
             <Text style={styles.textStyle}>
                 {defaultRating + '/' + maxRating.length}
             </Text>
-     
+
             <TouchableOpacity
                 onPress={handleSignOut}
                 style={styles.button}
             >
-            <Text style={styles.buttonText}>Submit</Text>
+                <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
-          
-            
+
+
         </SafeAreaView>
 
     )
@@ -68,12 +85,13 @@ const HomeScreen = () => {
 
 export default HomeScreen
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor:'#202020'
+        backgroundColor: '#202020'
     },
     button: {
         backgroundColor: '#4C0099',
@@ -84,7 +102,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     textStyle: {
-        color:'white',
+        color: 'white',
         marginTop: 20
     },
     buttonText: {
